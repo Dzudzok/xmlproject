@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,36 +10,41 @@
 <body class="bg-gradient-to-br from-gray-900 to-gray-700 text-white min-h-screen flex flex-col items-center justify-center p-6">
 
     <nav class="bg-gray-800 shadow-lg w-full fixed top-0 left-0 px-6 py-4 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-white"><i class="fa-solid fa-code"></i> XML Processor</h1>
+        <h1 class="text-2xl font-bold text-white"><i class="fa-solid fa-code"></i> XML_Mroauto</h1>
         <div class="flex gap-4">
             <button id="open-register" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg shadow">
-                <i class="fa-solid fa-user-plus"></i> Register
+                <i class="fa-solid fa-user-plus"></i> Registrovat se
             </button>
             <button id="open-login" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg shadow">
-                <i class="fa-solid fa-sign-in-alt"></i> Login
+                <i class="fa-solid fa-sign-in-alt"></i> Přihlásit se
             </button>
             <button id="logout-btn" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg shadow hidden">
-                <i class="fa-solid fa-sign-out-alt"></i> Logout
+                <i class="fa-solid fa-sign-out-alt"></i> Odhlásit
             </button>
         </div>
     </nav>
 
     <div class="mt-24 text-center">
-        <h2 class="text-3xl font-semibold mb-4" id="welcome-message">Welcome, Guest</h2>
+        <h2 class="text-3xl font-semibold mb-4" id="welcome-message">
+            Vítejte v programu pro zpracování souborů XML</h2>
         <div class="bg-gray-800 p-6 rounded-lg shadow-lg max-w-lg">
             <form id="upload-form" class="space-y-4">
                 <div>
-                    <label for="xml-file" class="block text-lg font-medium"><i class="fa-solid fa-file-code"></i> Upload XML File</label>
+                    <label for="xml-file" class="block text-lg font-medium"><i class="fa-solid fa-file-code"></i> Nahrát soubor XML</label>
                     <input type="file" id="xml-file" name="xml-file" accept=".xml" required class="mt-2 block w-full text-white bg-gray-700 border border-gray-600 rounded-lg p-2">
                 </div>
+                <div id="file-name" class="mt-2 text-green-400 hidden">
+                    <i class="fa-solid fa-file-check"></i> File selected: <span id="selected-file-name"></span>
+                </div>
+                
                 <div>
-                    <label for="template" class="block text-lg font-medium"><i class="fa-solid fa-layer-group"></i> Select Template</label>
+                    <label for="template" class="block text-lg font-medium"><i class="fa-solid fa-layer-group"></i> Vyberte šablonu</label>
                     <select id="template" name="template" required class="mt-2 block w-full bg-gray-700 text-white border border-gray-600 rounded-lg p-2">
                         <option value="heureka">Heureka.cz</option>
                     </select>
                 </div>
                 <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg shadow text-lg font-bold">
-                    <i class="fa-solid fa-gears"></i> Process File
+                    <i class="fa-solid fa-gears"></i> Zpracovat soubor
                 </button>
             </form>
         </div>
@@ -48,12 +53,12 @@
     <!-- Register Modal -->
     <div id="register-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
         <div class="bg-white p-6 rounded-lg shadow-lg text-gray-900 w-96 relative">
-            <h2 class="text-xl font-bold mb-4"><i class="fa-solid fa-user-plus"></i> Register</h2>
+            <h2 class="text-xl font-bold mb-4"><i class="fa-solid fa-user-plus"></i> Registrovat se</h2>
             <form id="registerForm" class="space-y-4">
                 <input type="text" name="username" placeholder="Username" class="w-full p-2 border rounded-lg">
                 <input type="email" name="email" placeholder="Email" class="w-full p-2 border rounded-lg">
                 <input type="password" name="password" placeholder="Password" class="w-full p-2 border rounded-lg">
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg">Register</button>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg">Registrovat se</button>
             </form>
             <button id="close-register" class="absolute top-4 right-4 text-gray-700 hover:text-gray-900 text-xl">&times;</button>
         </div>
@@ -62,25 +67,42 @@
     <!-- Login Modal -->
     <div id="login-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
         <div class="bg-white p-6 rounded-lg shadow-lg text-gray-900 w-96 relative">
-            <h2 class="text-xl font-bold mb-4"><i class="fa-solid fa-sign-in-alt"></i> Login</h2>
+            <h2 class="text-xl font-bold mb-4"><i class="fa-solid fa-sign-in-alt"></i> Přihlásit se</h2>
             <form id="loginForm" class="space-y-4">
                 <input type="text" name="username" placeholder="Username" class="w-full p-2 border rounded-lg">
                 <input type="password" name="password" placeholder="Password" class="w-full p-2 border rounded-lg">
-                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg">Login</button>
+                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg">Přihlásit se</button>
             </form>
             <button id="close-login" class="absolute top-4 right-4 text-gray-700 hover:text-gray-900 text-xl">&times;</button>
         </div>
     </div>
 
     <div id="result" class="hidden text-center mt-4">
-        <h2 class="text-xl font-semibold"><i class="fa-solid fa-check-circle"></i> Processed File</h2>
+        <h2 class="text-xl font-semibold"><i class="fa-solid fa-check-circle"></i> Zpracovat soubor</h2>
         <a id="download-link" href="#" class="mt-2 inline-block px-4 py-2 bg-green-500 hover:bg-green-600 rounded-lg shadow text-lg font-bold hidden">
-            <i class="fa-solid fa-download"></i> Download Processed XML
+            <i class="fa-solid fa-download"></i> Stáhnout zpracovaný XML
         </a>
     </div>
 
     <script>
         document.getElementById('registerForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const response = await fetch("/register", { method: "POST", body: formData });
+    const result = await response.json();
+    alert(result.message);
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    // Sprawdź, czy użytkownik jest zapisany w localStorage
+    const storedUser = localStorage.getItem("username");
+    if (storedUser) {
+        document.getElementById("welcome-message").innerText = "Welcome, " + storedUser;
+        document.getElementById("logout-btn").classList.remove("hidden");
+    }
+});
+
+document.getElementById('registerForm').addEventListener('submit', async (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
     const response = await fetch("/register", { method: "POST", body: formData });
@@ -94,9 +116,14 @@ document.getElementById('loginForm').addEventListener('submit', async (event) =>
     const response = await fetch("/login", { method: "POST", body: formData });
     const result = await response.json();
     if (result.status === "success") {
-        document.getElementById("welcome-message").innerText = "Welcome, " + formData.get("username");
+        const username = formData.get("username");
+        document.getElementById("welcome-message").innerText = "Welcome, " + username;
         document.getElementById("logout-btn").classList.remove("hidden");
-        closeModal(document.getElementById('login-modal')); // Zamknij modal po logowaniu
+        
+        // Zapisz użytkownika w localStorage
+        localStorage.setItem("username", username);
+
+        closeModal(document.getElementById('login-modal')); // Zamknij modal po zalogowaniu
     } else {
         alert("Error: " + result.error);
     }
@@ -106,6 +133,9 @@ document.getElementById('logout-btn').addEventListener('click', async () => {
     await fetch("/logout", { method: "POST" });
     document.getElementById("welcome-message").innerText = "Welcome, Guest";
     document.getElementById("logout-btn").classList.add("hidden");
+
+    // Usuń użytkownika z localStorage
+    localStorage.removeItem("username");
 });
 
 // Funkcje otwierania i zamykania modali
@@ -117,7 +147,7 @@ document.getElementById('open-login').addEventListener('click', () => openModal(
 document.getElementById('close-register').addEventListener('click', () => closeModal(document.getElementById('register-modal')));
 document.getElementById('close-login').addEventListener('click', () => closeModal(document.getElementById('login-modal')));
 
-// Nowa funkcja: Zamknięcie modalnego okna po kliknięciu poza nim
+// Zamknięcie modalnego okna po kliknięciu poza nim
 window.addEventListener('click', (event) => {
     const registerModal = document.getElementById('register-modal');
     const loginModal = document.getElementById('login-modal');
@@ -129,6 +159,16 @@ window.addEventListener('click', (event) => {
         closeModal(loginModal);
     }
 });
+
+document.getElementById('xml-file').addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        document.getElementById('selected-file-name').innerText = file.name;
+        document.getElementById('file-name').classList.remove("hidden");
+    }
+});
+
+
 
     </script>
 </body>
