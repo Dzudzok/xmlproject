@@ -38,13 +38,6 @@
                     <i class="fa-solid fa-file-check"></i> Wybrany plik: <span id="selected-file-name"></span>
                 </div>
 
-                <label for="template" class="block text-lg font-medium mt-4"><i class="fa-solid fa-layer-group"></i> Wybierz szablon:</label>
-                <select id="template" name="template" required class="mt-2 block w-full bg-gray-700 text-white border border-gray-600 rounded-lg p-2">
-                    <option value="heureka">Heureka.cz</option>
-                    <option value="allegro">Allegro</option>
-                    <option value="amazon">Amazon</option>
-                </select>
-
                 <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg shadow text-lg font-bold">
                     <i class="fa-solid fa-gears"></i> Przetwarzaj plik
                 </button>
@@ -67,6 +60,19 @@
         </button>
     </div>
 
+    <!-- Modal logowania -->
+    <div id="login-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="bg-white p-6 rounded-lg shadow-lg text-gray-900 w-96 relative">
+            <h2 class="text-xl font-bold mb-4"><i class="fa-solid fa-sign-in-alt"></i> Zaloguj się</h2>
+            <form id="loginForm" class="space-y-4">
+                <input type="text" name="username" placeholder="Nazwa użytkownika" class="w-full p-2 border rounded-lg">
+                <input type="password" name="password" placeholder="Hasło" class="w-full p-2 border rounded-lg">
+                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg">Zaloguj</button>
+            </form>
+            <button id="close-login" class="absolute top-4 right-4 text-gray-700 hover:text-gray-900 text-xl">&times;</button>
+        </div>
+    </div>
+
     <!-- Wynik -->
     <div id="result" class="hidden text-center mt-4">
         <h2 class="text-xl font-semibold"><i class="fa-solid fa-check-circle"></i> Gotowy plik</h2>
@@ -77,37 +83,24 @@
 
     <!-- Skrypty -->
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const storedUser = localStorage.getItem("username");
-            if (storedUser) {
-                document.getElementById("welcome-message").innerText = "Witaj, " + storedUser;
-                document.getElementById("logout-btn").classList.remove("hidden");
-            }
-        });
-
         document.getElementById('upload-form').addEventListener('submit', async (event) => {
             event.preventDefault();
             const formData = new FormData(event.target);
             document.getElementById("loading-spinner").classList.remove("hidden");
 
             try {
-                const response = await fetch("/get-tags", {
-                    method: "POST",
-                    body: formData
-                });
+                const response = await fetch("/get-tags", { method: "POST", body: formData });
 
                 document.getElementById("loading-spinner").classList.add("hidden");
 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    alert(`Błąd: ${errorData.error}`);
+                    alert("Błąd podczas przetwarzania pliku XML.");
                     return;
                 }
 
                 const tags = await response.json();
                 const mappingContainer = document.getElementById("mapping-container");
                 const mappingFields = document.getElementById("mapping-fields");
-
                 mappingFields.innerHTML = "";
 
                 tags.forEach(tag => {
@@ -119,6 +112,7 @@
 
                     const select = document.createElement('select');
                     select.name = `mapping[${tag}]`;
+                    select.classList.add('bg-gray-700', 'text-white', 'border', 'border-gray-600', 'rounded-lg', 'p-2');
 
                     const options = ['ITEM_ID', 'PRODUCTNAME', 'PRICE_VAT', 'URL', 'IMGURL', 'MANUFACTURER', 'EAN', 'EMPTY'];
                     options.forEach(option => {
@@ -137,46 +131,15 @@
 
             } catch (error) {
                 alert("Błąd podczas przetwarzania pliku XML.");
-                document.getElementById("loading-spinner").classList.add("hidden");
             }
         });
 
-        document.getElementById('process-file-btn').addEventListener('click', async () => {
-            const formData = new FormData(document.getElementById('upload-form'));
-
-            try {
-                const response = await fetch("/process", {
-                    method: "POST",
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    alert(`Błąd: ${errorData.error}`);
-                    return;
-                }
-
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
-
-                const downloadLink = document.getElementById("download-link");
-                downloadLink.href = url;
-                downloadLink.download = "processed.xml";
-                downloadLink.classList.remove("hidden");
-
-                document.getElementById("result").classList.remove("hidden");
-
-            } catch (error) {
-                alert("Błąd podczas przetwarzania pliku XML.");
-            }
+        document.getElementById("open-login").addEventListener("click", () => {
+            document.getElementById("login-modal").classList.remove("hidden");
         });
 
-        document.getElementById('xml-file').addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                document.getElementById('selected-file-name').innerText = file.name;
-                document.getElementById('file-name').classList.remove("hidden");
-            }
+        document.getElementById("close-login").addEventListener("click", () => {
+            document.getElementById("login-modal").classList.add("hidden");
         });
     </script>
 </body>
