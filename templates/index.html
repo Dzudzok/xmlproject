@@ -10,7 +10,7 @@
 <body class="bg-gradient-to-br from-gray-900 to-gray-700 text-white min-h-screen flex flex-col items-center justify-center p-6">
 
     <nav class="bg-gray-800 shadow-lg w-full fixed top-0 left-0 px-6 py-4 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-white"><i class="fa-solid fa-code"></i> XML_Mroauto</h1>
+        <h1 class="text-2xl font-bold text-white"><i class="fa-solid fa-code"></i> XML_MRO</h1>
         <div class="flex gap-4">
             <button id="open-register" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg shadow">
                 <i class="fa-solid fa-user-plus"></i> Registrovat se
@@ -26,7 +26,7 @@
 
     <div class="mt-24 text-center">
         <h2 class="text-3xl font-semibold mb-4" id="welcome-message">
-            Vítejte v programu pro zpracování souborů XML</h2>
+            Vítejte, v programu pro zpracování XML</h2>
         <div class="bg-gray-800 p-6 rounded-lg shadow-lg max-w-lg">
             <form id="upload-form" class="space-y-4">
                 <div>
@@ -36,13 +36,7 @@
                 <div id="file-name" class="mt-2 text-green-400 hidden">
                     <i class="fa-solid fa-file-check"></i> File selected: <span id="selected-file-name"></span>
                 </div>
-                
-                <div>
-                    <label for="template" class="block text-lg font-medium"><i class="fa-solid fa-layer-group"></i> Vyberte šablonu</label>
-                    <select id="template" name="template" required class="mt-2 block w-full bg-gray-700 text-white border border-gray-600 rounded-lg p-2">
-                        <option value="heureka">Heureka.cz</option>
-                    </select>
-                </div>
+
                 <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg shadow text-lg font-bold">
                     <i class="fa-solid fa-gears"></i> Zpracovat soubor
                 </button>
@@ -50,126 +44,123 @@
         </div>
     </div>
 
-    <!-- Register Modal -->
-    <div id="register-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
-        <div class="bg-white p-6 rounded-lg shadow-lg text-gray-900 w-96 relative">
-            <h2 class="text-xl font-bold mb-4"><i class="fa-solid fa-user-plus"></i> Registrovat se</h2>
-            <form id="registerForm" class="space-y-4">
-                <input type="text" name="username" placeholder="Username" class="w-full p-2 border rounded-lg">
-                <input type="email" name="email" placeholder="Email" class="w-full p-2 border rounded-lg">
-                <input type="password" name="password" placeholder="Password" class="w-full p-2 border rounded-lg">
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg">Registrovat se</button>
-            </form>
-            <button id="close-register" class="absolute top-4 right-4 text-gray-700 hover:text-gray-900 text-xl">&times;</button>
-        </div>
-    </div>
-
-    <!-- Login Modal -->
-    <div id="login-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
-        <div class="bg-white p-6 rounded-lg shadow-lg text-gray-900 w-96 relative">
-            <h2 class="text-xl font-bold mb-4"><i class="fa-solid fa-sign-in-alt"></i> Přihlásit se</h2>
-            <form id="loginForm" class="space-y-4">
-                <input type="text" name="username" placeholder="Username" class="w-full p-2 border rounded-lg">
-                <input type="password" name="password" placeholder="Password" class="w-full p-2 border rounded-lg">
-                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg">Přihlásit se</button>
-            </form>
-            <button id="close-login" class="absolute top-4 right-4 text-gray-700 hover:text-gray-900 text-xl">&times;</button>
-        </div>
+    <!-- Kontener mapowania -->
+    <div id="mapping-container" class="hidden text-center mt-4">
+        <h2 class="text-xl font-semibold"><i class="fa-solid fa-table-list"></i> Field Mapping</h2>
+        <div id="mapping-fields" class="mt-2"></div>
+        <button id="process-file-btn" class="mt-4 px-4 py-2 bg-green-500 hover:bg-green-600 rounded-lg shadow text-lg font-bold">
+            <i class="fa-solid fa-play"></i> Finalizovat zpracování
+        </button>
     </div>
 
     <div id="result" class="hidden text-center mt-4">
-        <h2 class="text-xl font-semibold"><i class="fa-solid fa-check-circle"></i> Zpracovat soubor</h2>
+        <h2 class="text-xl font-semibold"><i class="fa-solid fa-check-circle"></i> Hotový soubor</h2>
         <a id="download-link" href="#" class="mt-2 inline-block px-4 py-2 bg-green-500 hover:bg-green-600 rounded-lg shadow text-lg font-bold hidden">
-            <i class="fa-solid fa-download"></i> Stáhnout zpracovaný XML
+            <i class="fa-solid fa-download"></i> Stáhnout XML
         </a>
     </div>
 
     <script>
-        document.getElementById('registerForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    const response = await fetch("/register", { method: "POST", body: formData });
-    const result = await response.json();
-    alert(result.message);
-});
+        document.addEventListener("DOMContentLoaded", () => {
+            const storedUser = localStorage.getItem("username");
+            if (storedUser) {
+                document.getElementById("welcome-message").innerText = "Vítejte, " + storedUser;
+                document.getElementById("logout-btn").classList.remove("hidden");
+            }
+        });
 
-document.addEventListener("DOMContentLoaded", () => {
-    // Sprawdź, czy użytkownik jest zapisany w localStorage
-    const storedUser = localStorage.getItem("username");
-    if (storedUser) {
-        document.getElementById("welcome-message").innerText = "Welcome, " + storedUser;
-        document.getElementById("logout-btn").classList.remove("hidden");
-    }
-});
+        document.getElementById('upload-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
 
-document.getElementById('registerForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    const response = await fetch("/register", { method: "POST", body: formData });
-    const result = await response.json();
-    alert(result.message);
-});
+            const formData = new FormData(event.target);
 
-document.getElementById('loginForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    const response = await fetch("/login", { method: "POST", body: formData });
-    const result = await response.json();
-    if (result.status === "success") {
-        const username = formData.get("username");
-        document.getElementById("welcome-message").innerText = "Welcome, " + username;
-        document.getElementById("logout-btn").classList.remove("hidden");
-        
-        // Zapisz użytkownika w localStorage
-        localStorage.setItem("username", username);
+            try {
+                const response = await fetch("/get-tags", {
+                    method: "POST",
+                    body: formData
+                });
 
-        closeModal(document.getElementById('login-modal')); // Zamknij modal po zalogowaniu
-    } else {
-        alert("Error: " + result.error);
-    }
-});
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.error}`);
+                    return;
+                }
 
-document.getElementById('logout-btn').addEventListener('click', async () => {
-    await fetch("/logout", { method: "POST" });
-    document.getElementById("welcome-message").innerText = "Welcome, Guest";
-    document.getElementById("logout-btn").classList.add("hidden");
+                // Pobranie tagów XML
+                const tags = await response.json();
+                const mappingContainer = document.getElementById("mapping-container");
+                const mappingFields = document.getElementById("mapping-fields");
 
-    // Usuń użytkownika z localStorage
-    localStorage.removeItem("username");
-});
+                mappingFields.innerHTML = "";
 
-// Funkcje otwierania i zamykania modali
-const openModal = (modal) => modal.classList.remove("hidden");
-const closeModal = (modal) => modal.classList.add("hidden");
+                tags.forEach(tag => {
+                    const fieldDiv = document.createElement('div');
+                    fieldDiv.classList.add('form-group');
 
-document.getElementById('open-register').addEventListener('click', () => openModal(document.getElementById('register-modal')));
-document.getElementById('open-login').addEventListener('click', () => openModal(document.getElementById('login-modal')));
-document.getElementById('close-register').addEventListener('click', () => closeModal(document.getElementById('register-modal')));
-document.getElementById('close-login').addEventListener('click', () => closeModal(document.getElementById('login-modal')));
+                    const label = document.createElement('label');
+                    label.textContent = `Source Field: ${tag}`;
 
-// Zamknięcie modalnego okna po kliknięciu poza nim
-window.addEventListener('click', (event) => {
-    const registerModal = document.getElementById('register-modal');
-    const loginModal = document.getElementById('login-modal');
+                    const select = document.createElement('select');
+                    select.name = `mapping[${tag}]`;
 
-    if (event.target === registerModal) {
-        closeModal(registerModal);
-    }
-    if (event.target === loginModal) {
-        closeModal(loginModal);
-    }
-});
+                    const options = ['ITEM_ID', 'PRODUCTNAME', 'PRICE_VAT', 'URL', 'IMGURL', 'MANUFACTURER', 'EAN', 'EMPTY'];
+                    options.forEach(option => {
+                        const opt = document.createElement('option');
+                        opt.value = option;
+                        opt.textContent = option;
+                        select.appendChild(opt);
+                    });
 
-document.getElementById('xml-file').addEventListener('change', (event) => {
-    const file = event.target.files[0];
-    if (file) {
-        document.getElementById('selected-file-name').innerText = file.name;
-        document.getElementById('file-name').classList.remove("hidden");
-    }
-});
+                    fieldDiv.appendChild(label);
+                    fieldDiv.appendChild(select);
+                    mappingFields.appendChild(fieldDiv);
+                });
 
+                mappingContainer.classList.remove("hidden");
 
+            } catch (error) {
+                alert("Błąd podczas przetwarzania pliku XML.");
+            }
+        });
 
+        document.getElementById('process-file-btn').addEventListener('click', async () => {
+            const formData = new FormData(document.getElementById('upload-form'));
+
+            try {
+                const response = await fetch("/process", {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.error}`);
+                    return;
+                }
+
+                // Pobranie pliku XML jako blob
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+
+                const downloadLink = document.getElementById("download-link");
+                downloadLink.href = url;
+                downloadLink.download = "processed.xml";
+                downloadLink.classList.remove("hidden");
+
+                document.getElementById("result").classList.remove("hidden");
+
+            } catch (error) {
+                alert("Błąd podczas przetwarzania pliku XML.");
+            }
+        });
+
+        document.getElementById('xml-file').addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                document.getElementById('selected-file-name').innerText = file.name;
+                document.getElementById('file-name').classList.remove("hidden");
+            }
+        });
     </script>
 </body>
 </html>
