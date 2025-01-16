@@ -10,7 +10,7 @@
 <body class="bg-gradient-to-br from-gray-900 to-gray-700 text-white min-h-screen flex flex-col items-center justify-center p-6">
 
     <nav class="bg-gray-800 shadow-lg w-full fixed top-0 left-0 px-6 py-4 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-white"><i class="fa-solid fa-code"></i> XML_MRO</h1>
+        <h1 class="text-2xl font-bold text-white"><i class="fa-solid fa-code"></i> XML Processor</h1>
         <div class="flex gap-4">
             <button id="open-register" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg shadow">
                 <i class="fa-solid fa-user-plus"></i> Registrovat se
@@ -26,7 +26,7 @@
 
     <div class="mt-24 text-center">
         <h2 class="text-3xl font-semibold mb-4" id="welcome-message">
-            Vítejte, v programu pro zpracování XML</h2>
+            Vítejte w procesorze XML</h2>
         <div class="bg-gray-800 p-6 rounded-lg shadow-lg max-w-lg">
             <form id="upload-form" class="space-y-4">
                 <div>
@@ -34,14 +34,20 @@
                     <input type="file" id="xml-file" name="xml-file" accept=".xml" required class="mt-2 block w-full text-white bg-gray-700 border border-gray-600 rounded-lg p-2">
                 </div>
                 <div id="file-name" class="mt-2 text-green-400 hidden">
-                    <i class="fa-solid fa-file-check"></i> File selected: <span id="selected-file-name"></span>
+                    <i class="fa-solid fa-file-check"></i> Wybrany plik: <span id="selected-file-name"></span>
                 </div>
 
                 <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg shadow text-lg font-bold">
-                    <i class="fa-solid fa-gears"></i> Zpracovat soubor
+                    <i class="fa-solid fa-gears"></i> Przetwarzaj plik
                 </button>
             </form>
         </div>
+    </div>
+
+    <!-- Spinner ładowania -->
+    <div id="loading-spinner" class="hidden text-center mt-4">
+        <i class="fa-solid fa-spinner fa-spin text-4xl text-blue-500"></i>
+        <p class="mt-2">Przetwarzanie...</p>
     </div>
 
     <!-- Kontener mapowania -->
@@ -49,14 +55,14 @@
         <h2 class="text-xl font-semibold"><i class="fa-solid fa-table-list"></i> Field Mapping</h2>
         <div id="mapping-fields" class="mt-2"></div>
         <button id="process-file-btn" class="mt-4 px-4 py-2 bg-green-500 hover:bg-green-600 rounded-lg shadow text-lg font-bold">
-            <i class="fa-solid fa-play"></i> Finalizovat zpracování
+            <i class="fa-solid fa-play"></i> Finalizuj przetwarzanie
         </button>
     </div>
 
     <div id="result" class="hidden text-center mt-4">
-        <h2 class="text-xl font-semibold"><i class="fa-solid fa-check-circle"></i> Hotový soubor</h2>
+        <h2 class="text-xl font-semibold"><i class="fa-solid fa-check-circle"></i> Gotowy plik</h2>
         <a id="download-link" href="#" class="mt-2 inline-block px-4 py-2 bg-green-500 hover:bg-green-600 rounded-lg shadow text-lg font-bold hidden">
-            <i class="fa-solid fa-download"></i> Stáhnout XML
+            <i class="fa-solid fa-download"></i> Pobierz XML
         </a>
     </div>
 
@@ -71,14 +77,16 @@
 
         document.getElementById('upload-form').addEventListener('submit', async (event) => {
             event.preventDefault();
-
             const formData = new FormData(event.target);
+            document.getElementById("loading-spinner").classList.remove("hidden");
 
             try {
                 const response = await fetch("/get-tags", {
                     method: "POST",
                     body: formData
                 });
+
+                document.getElementById("loading-spinner").classList.add("hidden");
 
                 if (!response.ok) {
                     const errorData = await response.json();
@@ -120,6 +128,7 @@
 
             } catch (error) {
                 alert("Błąd podczas przetwarzania pliku XML.");
+                document.getElementById("loading-spinner").classList.add("hidden");
             }
         });
 
