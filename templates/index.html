@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -18,7 +19,6 @@
             align-items: center;
             z-index: 1000;
         }
-
         .modal-content {
             background: #fff;
             padding: 20px;
@@ -26,27 +26,22 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             width: 400px;
         }
-
         .modal-header {
             font-size: 18px;
             margin-bottom: 10px;
         }
-
         .close-btn {
             float: right;
             font-size: 20px;
             cursor: pointer;
             color: #999;
         }
-
         .close-btn:hover {
             color: #000;
         }
-
         .form-group {
             margin-bottom: 15px;
         }
-
         .btn {
             background-color: #3498db;
             color: white;
@@ -55,7 +50,6 @@
             cursor: pointer;
             border-radius: 4px;
         }
-
         .btn:hover {
             background-color: #2980b9;
         }
@@ -66,28 +60,22 @@
         <h2>Menu</h2>
         <a href="#" id="open-register">Register</a>
         <a href="#" id="open-login">Login</a>
-        <a href="/logout">Logout</a>
+        <a href="#" id="logout-btn" style="display:none;">Logout</a>
     </div>
+    
     <div class="main-content">
-        <h1>Welcome, {{ username }}</h1>
+        <h1 id="welcome-message">Welcome, Guest</h1>
         <form id="upload-form" action="/process" method="post" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="xml-file">Upload XML File</label>
                 <input type="file" id="xml-file" name="xml-file" accept=".xml" required>
             </div>
-
             <div class="form-group">
                 <label for="template">Select Template</label>
                 <select id="template" name="template" required>
                     <option value="heureka">Heureka.cz</option>
                 </select>
             </div>
-
-            <div id="mapping-container" style="display: none;">
-                <h3>Field Mapping</h3>
-                <div id="mapping-fields"></div>
-            </div>
-
             <button type="submit" class="btn-submit">Process File</button>
         </form>
 
@@ -102,7 +90,7 @@
         <div class="modal-content">
             <span class="close-btn" id="close-register">&times;</span>
             <div class="modal-header">Register</div>
-            <form action="/register" method="post">
+            <form id="registerForm">
                 <div class="form-group">
                     <label for="reg-username">Username:</label>
                     <input type="text" id="reg-username" name="username" required>
@@ -117,6 +105,7 @@
                 </div>
                 <button type="submit" class="btn">Register</button>
             </form>
+            <p id="registerMessage"></p>
         </div>
     </div>
 
@@ -125,7 +114,7 @@
         <div class="modal-content">
             <span class="close-btn" id="close-login">&times;</span>
             <div class="modal-header">Login</div>
-            <form action="/login" method="post">
+            <form id="loginForm">
                 <div class="form-group">
                     <label for="login-username">Username:</label>
                     <input type="text" id="login-username" name="username" required>
@@ -136,125 +125,46 @@
                 </div>
                 <button type="submit" class="btn">Login</button>
             </form>
+            <p id="loginMessage"></p>
         </div>
     </div>
 
-
     <script>
-        const form = document.getElementById('upload-form');
-        const resultDiv = document.getElementById('result');
-        const downloadLink = document.getElementById('download-link');
-        const mappingContainer = document.getElementById('mapping-container');
-        const mappingFields = document.getElementById('mapping-fields');
-        const xmlFileInput = document.getElementById('xml-file');
-
-        xmlFileInput.addEventListener('change', async (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                const formData = new FormData();
-                formData.append('xml-file', file);
-
-                try {
-                    const response = await fetch('/get-tags', {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    if (response.ok) {
-                        const tags = await response.json();
-                        mappingFields.innerHTML = '';
-
-                        tags.forEach(tag => {
-                            const fieldDiv = document.createElement('div');
-                            fieldDiv.classList.add('form-group');
-
-                            const label = document.createElement('label');
-                            label.textContent = `Source Field: ${tag}`;
-
-                            const select = document.createElement('select');
-                            select.name = `mapping[${tag}]`;
-
-                            const options = ['ITEM_ID', 'PRODUCTNAME', 'PRICE_VAT', 'PRODUCT', 'URL', 'IMGURL', 'MANUFACTURER', 'EAN', 'EMPTY']; // Add more options if needed
-                            options.forEach(option => {
-                                const opt = document.createElement('option');
-                                opt.value = option;
-                                opt.textContent = option;
-                                select.appendChild(opt);
-                            });
-
-                            fieldDiv.appendChild(label);
-                            fieldDiv.appendChild(select);
-                            mappingFields.appendChild(fieldDiv);
-                        });
-
-                        mappingContainer.style.display = 'block';
-                    } else {
-                        alert('Failed to retrieve tags from XML file.');
-                    }
-                } catch (error) {
-                    alert('An error occurred while parsing the XML file.');
-                }
-            }
-        });
-
-        form.addEventListener('submit', async (event) => {
+        document.getElementById('registerForm').addEventListener('submit', async (event) => {
             event.preventDefault();
+            const formData = new FormData(event.target);
+            const response = await fetch("/register", { method: "POST", body: formData });
+            const result = await response.json();
+            document.getElementById("registerMessage").innerText = result.message;
+        });
 
-            const formData = new FormData(form);
-
-            try {
-                const response = await fetch('/process', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const url = URL.createObjectURL(blob);
-                    downloadLink.href = url;
-                    downloadLink.download = 'processed.xml';
-                    resultDiv.style.display = 'block';
-                } else {
-                    const errorData = await response.json();
-                    alert(`Error: ${errorData.error}`);
-                }
-            } catch (error) {
-                alert('An error occurred while connecting to the server. Please try again.');
+        document.getElementById('loginForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const response = await fetch("/login", { method: "POST", body: formData });
+            const result = await response.json();
+            if (result.status === "success") {
+                document.getElementById("loginMessage").innerText = "Login successful!";
+                document.getElementById("welcome-message").innerText = "Welcome, " + formData.get("username");
+                document.getElementById("logout-btn").style.display = "block";
+            } else {
+                document.getElementById("loginMessage").innerText = "Error: " + result.error;
             }
         });
 
-         // Open and close modals
-         const registerModal = document.getElementById('register-modal');
-        const loginModal = document.getElementById('login-modal');
-        const openRegister = document.getElementById('open-register');
-        const openLogin = document.getElementById('open-login');
-        const closeRegister = document.getElementById('close-register');
-        const closeLogin = document.getElementById('close-login');
-
-        openRegister.addEventListener('click', () => {
-            registerModal.style.display = 'flex';
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            await fetch("/logout", { method: "POST" });
+            document.getElementById("welcome-message").innerText = "Welcome, Guest";
+            document.getElementById("logout-btn").style.display = "none";
         });
 
-        openLogin.addEventListener('click', () => {
-            loginModal.style.display = 'flex';
-        });
+        const openModal = (modal) => modal.style.display = 'flex';
+        const closeModal = (modal) => modal.style.display = 'none';
 
-        closeRegister.addEventListener('click', () => {
-            registerModal.style.display = 'none';
-        });
-
-        closeLogin.addEventListener('click', () => {
-            loginModal.style.display = 'none';
-        });
-
-        window.addEventListener('click', (event) => {
-            if (event.target === registerModal) {
-                registerModal.style.display = 'none';
-            }
-            if (event.target === loginModal) {
-                loginModal.style.display = 'none';
-            }
-        });
+        document.getElementById('open-register').addEventListener('click', () => openModal(document.getElementById('register-modal')));
+        document.getElementById('open-login').addEventListener('click', () => openModal(document.getElementById('login-modal')));
+        document.getElementById('close-register').addEventListener('click', () => closeModal(document.getElementById('register-modal')));
+        document.getElementById('close-login').addEventListener('click', () => closeModal(document.getElementById('login-modal')));
     </script>
 </body>
 </html>
