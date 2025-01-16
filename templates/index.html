@@ -4,128 +4,63 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>XML Processor</title>
-    <link rel="stylesheet" href="static/styles.css">
-    <style>
-        /* Modal styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            width: 400px;
-        }
-        .modal-header {
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
-        .close-btn {
-            float: right;
-            font-size: 20px;
-            cursor: pointer;
-            color: #999;
-        }
-        .close-btn:hover {
-            color: #000;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .btn {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-        .btn:hover {
-            background-color: #2980b9;
-        }
-    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
-<body>
-    <div class="sidebar">
-        <h2>Menu</h2>
-        <a href="#" id="open-register">Register</a>
-        <a href="#" id="open-login">Login</a>
-        <a href="#" id="logout-btn" style="display:none;">Logout</a>
-    </div>
-    
-    <div class="main-content">
-        <h1 id="welcome-message">Welcome, Guest</h1>
-        <form id="upload-form" action="/process" method="post" enctype="multipart/form-data">
-            <div class="form-group">
-                <label for="xml-file">Upload XML File</label>
-                <input type="file" id="xml-file" name="xml-file" accept=".xml" required>
-            </div>
-            <div class="form-group">
-                <label for="template">Select Template</label>
-                <select id="template" name="template" required>
-                    <option value="heureka">Heureka.cz</option>
-                </select>
-            </div>
-            <button type="submit" class="btn-submit">Process File</button>
-        </form>
+<body class="bg-gradient-to-br from-gray-900 to-gray-700 text-white min-h-screen flex flex-col items-center justify-center p-6">
 
-        <div id="result" style="display: none;">
-            <h2>Processed File</h2>
-            <a id="download-link" href="#" class="btn-download">Download Processed XML</a>
+    <nav class="bg-gray-800 shadow-lg w-full fixed top-0 left-0 px-6 py-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-white">XML Processor</h1>
+        <div class="flex gap-4">
+            <button id="open-register" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg shadow">Register</button>
+            <button id="open-login" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg shadow">Login</button>
+            <button id="logout-btn" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg shadow hidden">Logout</button>
+        </div>
+    </nav>
+
+    <div class="mt-24 text-center">
+        <h2 class="text-3xl font-semibold mb-4" id="welcome-message">Welcome, Guest</h2>
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg max-w-lg">
+            <form id="upload-form" class="space-y-4">
+                <div>
+                    <label for="xml-file" class="block text-lg font-medium">Upload XML File</label>
+                    <input type="file" id="xml-file" name="xml-file" accept=".xml" required class="mt-2 block w-full text-white bg-gray-700 border border-gray-600 rounded-lg p-2">
+                </div>
+                <div>
+                    <label for="template" class="block text-lg font-medium">Select Template</label>
+                    <select id="template" name="template" required class="mt-2 block w-full bg-gray-700 text-white border border-gray-600 rounded-lg p-2">
+                        <option value="heureka">Heureka.cz</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg shadow text-lg font-bold">Process File</button>
+            </form>
         </div>
     </div>
 
     <!-- Register Modal -->
-    <div id="register-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" id="close-register">&times;</span>
-            <div class="modal-header">Register</div>
-            <form id="registerForm">
-                <div class="form-group">
-                    <label for="reg-username">Username:</label>
-                    <input type="text" id="reg-username" name="username" required>
-                </div>
-                <div class="form-group">
-                    <label for="reg-email">Email:</label>
-                    <input type="email" id="reg-email" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label for="reg-password">Password:</label>
-                    <input type="password" id="reg-password" name="password" required>
-                </div>
-                <button type="submit" class="btn">Register</button>
+    <div id="register-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+        <div class="bg-white p-6 rounded-lg shadow-lg text-gray-900 w-96">
+            <h2 class="text-xl font-bold mb-4">Register</h2>
+            <form id="registerForm" class="space-y-4">
+                <input type="text" name="username" placeholder="Username" class="w-full p-2 border rounded-lg">
+                <input type="email" name="email" placeholder="Email" class="w-full p-2 border rounded-lg">
+                <input type="password" name="password" placeholder="Password" class="w-full p-2 border rounded-lg">
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg">Register</button>
             </form>
-            <p id="registerMessage"></p>
+            <button id="close-register" class="absolute top-4 right-4 text-gray-700 hover:text-gray-900 text-xl">&times;</button>
         </div>
     </div>
 
     <!-- Login Modal -->
-    <div id="login-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" id="close-login">&times;</span>
-            <div class="modal-header">Login</div>
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="login-username">Username:</label>
-                    <input type="text" id="login-username" name="username" required>
-                </div>
-                <div class="form-group">
-                    <label for="login-password">Password:</label>
-                    <input type="password" id="login-password" name="password" required>
-                </div>
-                <button type="submit" class="btn">Login</button>
+    <div id="login-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+        <div class="bg-white p-6 rounded-lg shadow-lg text-gray-900 w-96">
+            <h2 class="text-xl font-bold mb-4">Login</h2>
+            <form id="loginForm" class="space-y-4">
+                <input type="text" name="username" placeholder="Username" class="w-full p-2 border rounded-lg">
+                <input type="password" name="password" placeholder="Password" class="w-full p-2 border rounded-lg">
+                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg">Login</button>
             </form>
-            <p id="loginMessage"></p>
+            <button id="close-login" class="absolute top-4 right-4 text-gray-700 hover:text-gray-900 text-xl">&times;</button>
         </div>
     </div>
 
@@ -135,7 +70,7 @@
             const formData = new FormData(event.target);
             const response = await fetch("/register", { method: "POST", body: formData });
             const result = await response.json();
-            document.getElementById("registerMessage").innerText = result.message;
+            alert(result.message);
         });
 
         document.getElementById('loginForm').addEventListener('submit', async (event) => {
@@ -144,22 +79,21 @@
             const response = await fetch("/login", { method: "POST", body: formData });
             const result = await response.json();
             if (result.status === "success") {
-                document.getElementById("loginMessage").innerText = "Login successful!";
                 document.getElementById("welcome-message").innerText = "Welcome, " + formData.get("username");
-                document.getElementById("logout-btn").style.display = "block";
+                document.getElementById("logout-btn").classList.remove("hidden");
             } else {
-                document.getElementById("loginMessage").innerText = "Error: " + result.error;
+                alert("Error: " + result.error);
             }
         });
 
         document.getElementById('logout-btn').addEventListener('click', async () => {
             await fetch("/logout", { method: "POST" });
             document.getElementById("welcome-message").innerText = "Welcome, Guest";
-            document.getElementById("logout-btn").style.display = "none";
+            document.getElementById("logout-btn").classList.add("hidden");
         });
 
-        const openModal = (modal) => modal.style.display = 'flex';
-        const closeModal = (modal) => modal.style.display = 'none';
+        const openModal = (modal) => modal.classList.remove("hidden");
+        const closeModal = (modal) => modal.classList.add("hidden");
 
         document.getElementById('open-register').addEventListener('click', () => openModal(document.getElementById('register-modal')));
         document.getElementById('open-login').addEventListener('click', () => openModal(document.getElementById('login-modal')));
