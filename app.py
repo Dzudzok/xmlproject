@@ -8,24 +8,24 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
-# 📌 Folder do przechowywania plików (Render obsługuje lokalne przechowywanie)
+# 📌 Folder do przechowywania plików
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# 📌 Konfiguracja bazy danych SQLite zamiast Firestore
+# 📌 Konfiguracja bazy danych SQLite
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# 📌 Model użytkownika (zastępuje Firestore)
+# 📌 Model użytkownika
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
 
-# 📌 Tworzenie bazy danych, jeśli nie istnieje
+# 📌 Tworzenie bazy danych
 with app.app_context():
     db.create_all()
 
@@ -41,7 +41,6 @@ def register():
     email = data['email']
     password_hash = generate_password_hash(data['password'], method='pbkdf2:sha256')
 
-    # Sprawdzenie, czy użytkownik już istnieje
     existing_user = User.query.filter_by(username=username).first()
     if existing_user:
         return jsonify({'error': 'User already exists.', 'status': 'error'}), 400
@@ -63,29 +62,106 @@ def login():
     
     return jsonify({'error': 'Invalid username or password.', 'status': 'error'})
 
-# 📌 Przesyłanie pliku XML (teraz pliki zapisujemy lokalnie)
-@app.route('/upload', methods=['POST'])
-def upload_file():
-    if 'file' not in request.files:
-        return jsonify({'error': 'Brak pliku w zapytaniu'}), 400
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'Nie wybrano pliku'}), 400
-    
-    # 📌 Zapis pliku w katalogu "uploads"
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-    file.save(file_path)
-    return jsonify({'message': f'Plik {file.filename} zapisany!', 'status': 'success'}), 200
+# 📌 Wylogowanie użytkownika
+@app.route('/logout', methods=['POST'])
+def logout():
+    session.clear()
+    return jsonify({'message': 'Logout successful!', 'status': 'success'}), 200
 
-# 📌 Pobieranie przetworzonego pliku XML
-@app.route('/download/<filename>', methods=['GET'])
-def download_file(filename):
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    
-    if not os.path.exists(file_path):
-        return jsonify({'error': 'Plik nie istnieje'}), 404
-    
-    return send_file(file_path, as_attachment=True, download_name=filename, mimetype='application/xml')
+# 📌 Pobieranie tagów XML
+@app.route('/get-tags', methods=['POST'])
+def get_tags():
+    try:
+        uploaded_file = request.files.get('xml-file')
+        if not uploaded_file or not uploaded_file.filename.endswith('.xml'):
+            return jsonify({'error': 'Nieprawidłowy plik. Prześlij poprawny XML.'}), 400
+
+        tree = ET.parse(uploaded_file)
+        root = tree.getroot()
+        tags = {element.tag for element in root.iter()}
+
+        return jsonify(sorted(tags))
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# 📌 Szablony XML
+templates = {
+    'heureka': {
+        'id': 'ITEM_ID',
+        'title': 'PRODUCTNAME',
+        'description': 'DESCRIPTION',
+        'link': 'URL',
+        'image_link': 'IMGURL',
+        'price': 'PRICE_VAT',
+        'brand': 'MANUFACTURER',
+        'gtin': 'EAN'
+    },
+    'allegro': {
+        'id': 'OFFER_ID',
+        'title': 'NAME',
+        'description': 'DESC',
+        'link': 'LINK',
+        'image_link': 'IMAGE',
+        'price': 'COST',
+        'brand': 'BRAND',
+        'gtin': 'BARCODE'
+    },
+    'amazon': {
+        'id': 'ASIN',
+        'title': 'TITLE',
+        'description': 'DESCRIPTION_LONG',
+        'link': 'PRODUCT_URL',
+        'image_link': 'IMAGE_URL',
+        'price': 'PRICE_AMOUNT',
+        'brand': 'MANUFACTURER_NAME',
+        'gtin': 'UPC'
+    }
+}
+
+# 📌 Pobieranie mapowania pól dla szablonu
+@app.route('/get-mapping', methods=['POST'])
+def get_mapping():
+    template = request.form.get('template')
+    if template not in templates:
+        return jsonify({'error': 'Nieznany szablon.'}), 400
+    return jsonify(templates[template])
+
+# 📌 Przetwarzanie pliku XML
+@app.route('/process', methods=['POST'])
+def process_file():
+    try:
+        uploaded_file = request.files.get('xml-file')
+        template = request.form.get('template')
+
+        if not uploaded_file or not uploaded_file.filename.endswith('.xml'):
+            return jsonify({'error': 'Nieprawidłowy plik. Prześlij poprawny XML.'}), 400
+
+        if template not in templates:
+            return jsonify({'error': 'Nieznany szablon.'}), 400
+
+        mappings = request.form.to_dict(flat=True)
+
+        input_tree = ET.parse(uploaded_file)
+        input_root = input_tree.getroot()
+        output_root = ET.Element('SHOP')
+
+        for item in input_root.findall('.//item'):
+            shopitem = ET.SubElement(output_root, 'SHOPITEM')
+
+            for source_field, target_field in mappings.items():
+                source_element = item.find(source_field)
+                if source_element is not None and source_element.text:
+                    ET.SubElement(shopitem, target_field).text = source_element.text
+
+        output = BytesIO()
+        output_tree = ET.ElementTree(output_root)
+        output_tree.write(output, encoding='utf-8', xml_declaration=True)
+        output.seek(0)
+
+        return send_file(output, as_attachment=True, download_name='processed.xml', mimetype='application/xml')
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
