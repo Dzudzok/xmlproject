@@ -81,39 +81,55 @@
 
     <script>
         document.getElementById('registerForm').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const formData = new FormData(event.target);
-            const response = await fetch("/register", { method: "POST", body: formData });
-            const result = await response.json();
-            alert(result.message);
-        });
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const response = await fetch("/register", { method: "POST", body: formData });
+    const result = await response.json();
+    alert(result.message);
+});
 
-        document.getElementById('loginForm').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const formData = new FormData(event.target);
-            const response = await fetch("/login", { method: "POST", body: formData });
-            const result = await response.json();
-            if (result.status === "success") {
-                document.getElementById("welcome-message").innerText = "Welcome, " + formData.get("username");
-                document.getElementById("logout-btn").classList.remove("hidden");
-            } else {
-                alert("Error: " + result.error);
-            }
-        });
+document.getElementById('loginForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const response = await fetch("/login", { method: "POST", body: formData });
+    const result = await response.json();
+    if (result.status === "success") {
+        document.getElementById("welcome-message").innerText = "Welcome, " + formData.get("username");
+        document.getElementById("logout-btn").classList.remove("hidden");
+        closeModal(document.getElementById('login-modal')); // Zamknij modal po logowaniu
+    } else {
+        alert("Error: " + result.error);
+    }
+});
 
-        document.getElementById('logout-btn').addEventListener('click', async () => {
-            await fetch("/logout", { method: "POST" });
-            document.getElementById("welcome-message").innerText = "Welcome, Guest";
-            document.getElementById("logout-btn").classList.add("hidden");
-        });
+document.getElementById('logout-btn').addEventListener('click', async () => {
+    await fetch("/logout", { method: "POST" });
+    document.getElementById("welcome-message").innerText = "Welcome, Guest";
+    document.getElementById("logout-btn").classList.add("hidden");
+});
 
-        const openModal = (modal) => modal.classList.remove("hidden");
-        const closeModal = (modal) => modal.classList.add("hidden");
+// Funkcje otwierania i zamykania modali
+const openModal = (modal) => modal.classList.remove("hidden");
+const closeModal = (modal) => modal.classList.add("hidden");
 
-        document.getElementById('open-register').addEventListener('click', () => openModal(document.getElementById('register-modal')));
-        document.getElementById('open-login').addEventListener('click', () => openModal(document.getElementById('login-modal')));
-        document.getElementById('close-register').addEventListener('click', () => closeModal(document.getElementById('register-modal')));
-        document.getElementById('close-login').addEventListener('click', () => closeModal(document.getElementById('login-modal')));
+document.getElementById('open-register').addEventListener('click', () => openModal(document.getElementById('register-modal')));
+document.getElementById('open-login').addEventListener('click', () => openModal(document.getElementById('login-modal')));
+document.getElementById('close-register').addEventListener('click', () => closeModal(document.getElementById('register-modal')));
+document.getElementById('close-login').addEventListener('click', () => closeModal(document.getElementById('login-modal')));
+
+// Nowa funkcja: Zamknięcie modalnego okna po kliknięciu poza nim
+window.addEventListener('click', (event) => {
+    const registerModal = document.getElementById('register-modal');
+    const loginModal = document.getElementById('login-modal');
+
+    if (event.target === registerModal) {
+        closeModal(registerModal);
+    }
+    if (event.target === loginModal) {
+        closeModal(loginModal);
+    }
+});
+
     </script>
 </body>
 </html>
