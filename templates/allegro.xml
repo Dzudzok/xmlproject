@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SHOP>
+  <ITEM>
+    <NUMERO>NUMERO</NUMERO>
+    <PRODUCTNAME>PRODUCTNAME</PRODUCTNAME>
+    <PRODUCT>PRODUCT</PRODUCT>
+    <OPI>OPI</OPI>
+    <URL>URL</URL>
+    <IMGURL>IMGURL</IMGURL>
+    <KWO>KWO</KWO>
+    <MANU>MANU</MANU>
+    <EAN>EAN</EAN>
+  </ITEM>
+</SHOP>
